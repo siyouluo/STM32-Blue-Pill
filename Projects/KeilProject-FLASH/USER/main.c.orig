@@ -1,0 +1,58 @@
+#include "sys.h"
+#include "delay.h"
+#include "usart1.h"
+#include "led.h"
+
+#include "iic.h"
+#include "oled.h"
+#include "stm32_flash.h"
+
+
+const u8 text_buf[]="www.prechin.net";
+#define TEXTLEN sizeof(text_buf)
+void All_Init()
+{
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
+    Delay_Init();	    //延时函数初始化
+
+    LED_Init();		  	//初始化与LED连接的硬件接口
+
+    USART1_Init(57600);
+
+
+
+    IIC_Init();
+    OLED_Init();
+
+   OLED_ShowStr(0,0, OLED_STR_BUF, 1);
+
+}
+int main(void)
+{
+    vu8 key=0;
+    u8 read_buf[TEXTLEN];
+    All_Init();
+    while(1)
+    {
+
+        printf(" PRECHIN STM32F1 \r\n");
+        printf(" www.prechin.net \r\n");
+        printf(" STM32_Flash Test \r\n");
+        printf(" K_UP:Write   K_DOWN:Read \r\n");
+        printf("  \r\n");
+
+        STM32_FLASH_Write(STM32_FLASH_SAVE_ADDR,(u16*)text_buf,TEXTLEN);
+        printf("写入数据为：  %s\r\n",text_buf);
+
+delay_ms(100);
+        STM32_FLASH_Read(STM32_FLASH_SAVE_ADDR,(u16 *)read_buf,TEXTLEN);
+        printf("读取数据为：  %s\r\n",read_buf);
+		delay_ms(100);
+
+			LED = ~LED;
+
+    }
+}
+
+
